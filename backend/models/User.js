@@ -36,6 +36,21 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  preferences: {
+    notifications: {
+      type: Boolean,
+      default: true
+    },
+    defaultRouteType: {
+      type: String,
+      enum: ['fastest', 'shortest', 'safest'],
+      default: 'safest'
+    },
+    hazardAlertRadius: {
+      type: Number,
+      default: 5000 // in meters
+    }
+  },
   createdAt: {
     type: Date,
     default: Date.now
