@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs').promises;
+const User = require('../models/User');
 
 // @desc    Upload hazard photo
 // @route   POST /api/upload/hazard-photo
@@ -66,6 +67,99 @@ exports.deleteHazardPhoto = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error deleting photo',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Upload profile photo
+// @route   POST /api/upload/profile-photo
+// @access  Private
+exports.uploadProfilePhoto = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No file uploaded'
+      });
+    }
+
+    // Get user and delete old profile photo if exists
+    const user = await User.findById(req.user.id);
+    if (user && user.avatar) {
+      const oldPhotoPath = path.join(__dirname, '..', user.avatar);
+      try {
+        await fs.access(oldPhotoPath);
+        await fs.unlink(oldPhotoPath);
+        console.log('Old profile photo deleted:', user.avatar);
+      } catch (err) {
+        // File doesn't exist, ignore error
+        console.log('No old profile photo to delete');
+      }
+    }
+
+    // Update user's avatar field
+    const avatarUrl = `/uploads/profiles/${req.file.filename}`;
+    user.avatar = avatarUrl;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile photo uploaded successfully',
+      data: {
+        filename: req.file.filename,
+        url: avatarUrl,
+        size: req.file.size,
+        mimetype: req.file.mimetype
+      }
+    });
+  } catch (error) {
+    console.error('Upload profile photo error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error uploading profile photo',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Delete profile photo
+// @route   DELETE /api/upload/profile-photo
+// @access  Private
+exports.deleteProfilePhoto = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user || !user.avatar) {
+      return res.status(404).json({
+        success: false,
+        message: 'No profile photo found'
+      });
+    }
+
+    const filePath = path.join(__dirname, '..', user.avatar);
+
+    // Check if file exists and delete it
+    try {
+      await fs.access(filePath);
+      await fs.unlink(filePath);
+    } catch (err) {
+      console.log('File not found, skipping deletion:', err.message);
+    }
+
+    // Remove avatar from user profile
+    user.avatar = null;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile photo deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete profile photo error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting profile photo',
       error: error.message
     });
   }
