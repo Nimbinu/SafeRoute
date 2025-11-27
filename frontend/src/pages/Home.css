@@ -1,0 +1,385 @@
+﻿/* Modern Clean SafeRoute Home Page */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.modern-home {
+  min-height: 100vh;
+  background: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Clean Navbar */
+.clean-navbar {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1.25rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.brand-icon {
+  font-size: 1.75rem;
+}
+
+.brand-name {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1f2937;
+  letter-spacing: -0.025em;
+}
+
+.nav-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.nav-login {
+  padding: 0.625rem 1.5rem;
+  background: transparent;
+  border: none;
+  color: #4b5563;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+  border-radius: 8px;
+}
+
+.nav-login:hover {
+  color: #1f2937;
+  background: #f3f4f6;
+}
+
+.nav-join {
+  padding: 0.625rem 1.5rem;
+  background: #1f2937;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-join:hover {
+  background: #111827;
+  transform: translateY(-1px);
+}
+
+/* Hero Section */
+.hero-section {
+  flex: 1;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  padding: 4rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-content-wrapper {
+  max-width: 1200px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.hero-text {
+  max-width: 550px;
+}
+
+.hero-heading {
+  font-size: 3.25rem;
+  font-weight: 800;
+  color: #1f2937;
+  line-height: 1.15;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.025em;
+}
+
+.hero-subheading {
+  font-size: 1.15rem;
+  color: #6b7280;
+  line-height: 1.7;
+  margin-bottom: 2.5rem;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  padding: 1rem 2rem;
+  background: #1f2937;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(31, 41, 55, 0.2);
+}
+
+.btn-primary:hover {
+  background: #111827;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(31, 41, 55, 0.3);
+}
+
+.btn-secondary {
+  padding: 1rem 2rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  color: #1f2937;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-secondary:hover {
+  border-color: #d1d5db;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.icon-avatar {
+  font-size: 1.2rem;
+}
+
+/* Hero Visual */
+.hero-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.visual-card {
+  background: white;
+  border-radius: 20px;
+  padding: 3rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px;
+}
+
+.map-illustration {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-pin {
+  position: absolute;
+  font-size: 2.5rem;
+  animation: bounce 2s ease-in-out infinite;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.pin-1 {
+  top: 20%;
+  left: 25%;
+  animation-delay: 0s;
+}
+
+.pin-2 {
+  top: 50%;
+  right: 20%;
+  animation-delay: 0.5s;
+}
+
+.pin-3 {
+  bottom: 20%;
+  left: 35%;
+  animation-delay: 1s;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+.route-path {
+  position: absolute;
+  top: 30%;
+  left: 30%;
+  width: 50%;
+  height: 50%;
+  border: 3px dashed rgba(59, 130, 246, 0.4);
+  border-radius: 50%;
+  animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Clean Footer */
+.clean-footer {
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  padding: 2rem;
+  text-align: center;
+}
+
+.clean-footer p {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .hero-content-wrapper {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    text-align: center;
+  }
+
+  .hero-text {
+    max-width: 100%;
+  }
+
+  .hero-actions {
+    justify-content: center;
+  }
+
+  .hero-visual {
+    order: -1;
+  }
+
+  .visual-card {
+    max-width: 400px;
+  }
+
+  .map-illustration {
+    height: 350px;
+  }
+}
+
+@media (max-width: 768px) {
+  .clean-navbar {
+    padding: 1rem;
+  }
+
+  .navbar-wrapper {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .nav-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .brand-name {
+    font-size: 1.2rem;
+  }
+
+  .hero-section {
+    padding: 2.5rem 1.5rem;
+  }
+
+  .hero-heading {
+    font-size: 2.25rem;
+  }
+
+  .hero-subheading {
+    font-size: 1rem;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .visual-card {
+    padding: 2rem;
+    max-width: 100%;
+  }
+
+  .map-illustration {
+    height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-heading {
+    font-size: 1.85rem;
+  }
+
+  .hero-subheading {
+    font-size: 0.95rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .nav-login,
+  .nav-join {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .map-illustration {
+    height: 250px;
+  }
+
+  .map-pin {
+    font-size: 2rem;
+  }
+}
