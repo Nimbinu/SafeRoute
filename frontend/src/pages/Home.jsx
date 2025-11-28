@@ -6,66 +6,53 @@ const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="modern-home">
-      {/* Clean Navbar */}
-      <nav className="clean-navbar">
-        <div className="navbar-wrapper">
-          <div className="brand-section">
-            <span className="brand-icon">🛣️</span>
-            <span className="brand-name">SafeRoute</span>
-          </div>
-          
-          <div className="nav-actions">
-            <button className="nav-login" onClick={() => navigate('/login')}>
-              Login
-            </button>
-            <button className="nav-join" onClick={() => navigate('/register')}>
-              Join for Free →
-            </button>
-          </div>
+    <div className="home-container">
+      {/* Header */}
+      <header className="home-header">
+        <div className="logo-section">
+          <span className="logo-icon">🛣️</span>
+          <span className="logo-text">SafeRoute</span>
         </div>
-      </nav>
+      </header>
 
-      {/* Hero Section */}
-      <section className="hero-section">
-        <div className="hero-content-wrapper">
-          <div className="hero-text">
-            <h1 className="hero-heading">
-              Find Your Safe Route,<br />
-              Build Your Network.
-            </h1>
+      {/* Main Content */}
+      <main className="home-main">
+        <div className="home-content">
+          {/* Left Side - Text Content */}
+          <div className="content-left">
+            <h1 className="home-title">Your Guide to Safer Journeys</h1>
             
-            <p className="hero-subheading">
-              Connect with real-time hazard reporting and intelligent alternative routes. 
-              Join our community to drive smarter and safer across Sri Lanka.
+            <p className="home-description">
+              Real-time road hazard reporting and intelligent alternative routes. 
+              Join our community to drive smarter and safer.
             </p>
             
-            <div className="hero-actions">
-              <button className="btn-primary" onClick={() => navigate('/register')}>
-                Join for Free →
+            <div className="home-buttons">
+              <button className="btn-login" onClick={() => navigate('/login')}>
+                Login
               </button>
-              <button className="btn-secondary" onClick={() => navigate('/map-dashboard')}>
-                <span className="icon-avatar">👥</span>
-                Explore Communities
+              <button className="btn-register" onClick={() => navigate('/register')}>
+                Register
               </button>
             </div>
           </div>
-          
-          <div className="hero-visual">
-            <div className="visual-card">frontend
-              <div className="map-illustration">
-                <div className="map-pin pin-1">📍</div>
-                <div className="map-pin pin-2">🚨</div>
-                <div className="map-pin pin-3">✅</div>
-                <div className="route-path"></div>
-              </div>
+
+          {/* Right Side - Hero Image */}
+          <div className="content-right">
+            <div className="hero-image-container">
+              <img 
+                src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1200&q=80" 
+                alt="Road Safety - Accident Scene with Emergency Response" 
+                className="hero-image"
+              />
+              <div className="image-overlay"></div>
             </div>
           </div>
         </div>
-      </section>
+      </main>
 
-      {/* Simple Footer */}
-      <footer className="clean-footer">
+      {/* Footer */}
+      <footer className="home-footer">
         <p>© 2025 SafeRoute. All rights reserved.</p>
       </footer>
     </div>
