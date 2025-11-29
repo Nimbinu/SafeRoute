@@ -10,9 +10,20 @@ const Home = () => {
       {/* Header */}
       <header className="home-header">
         <div className="logo-section">
-          <span className="logo-icon">🛣️</span>
+          <div className="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L4 6V11C4 16.55 7.84 21.74 13 23C18.16 21.74 22 16.55 22 11V6L12 2Z" fill="white"/>
+            </svg>
+          </div>
           <span className="logo-text">SafeRoute</span>
         </div>
+        
+        <nav className="navbar">
+          <button className="nav-link" onClick={() => navigate('/')}>Home</button>
+          <button className="nav-link" onClick={() => navigate('/about')}>About</button>
+          <button className="nav-link" onClick={() => navigate('/login')}>Login</button>
+          <button className="nav-link nav-link-signup" onClick={() => navigate('/register')}>Sign Up</button>
+        </nav>
       </header>
 
       {/* Main Content */}
