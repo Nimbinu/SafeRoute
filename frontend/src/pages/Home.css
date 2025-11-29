@@ -17,23 +17,75 @@
 .home-header {
   padding: 1.5rem 2rem;
   width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .logo-section {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .logo-icon {
-  font-size: 1.75rem;
+  width: 40px;
+  height: 40px;
+  background: #2563eb;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+.logo-icon svg {
+  width: 100%;
+  height: 100%;
 }
 
 .logo-text {
-  font-size: 1.35rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: #ffffff;
+  color: #2563eb;
   letter-spacing: -0.025em;
+}
+
+/* Navigation Bar */
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-link {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.nav-link:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link-signup {
+  background: #00b8d4;
+  color: white;
+  padding: 0.6rem 1.5rem;
+  font-weight: 600;
+}
+
+.nav-link-signup:hover {
+  background: #00a3c4;
+  transform: translateY(-1px);
 }
 
 /* Main Content */
@@ -202,6 +254,21 @@
 @media (max-width: 768px) {
   .home-header {
     padding: 1.25rem 1.5rem;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .navbar {
+    gap: 1rem;
+  }
+
+  .nav-link {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .nav-link-signup {
+    padding: 0.5rem 1.2rem;
   }
 
   .logo-icon {
