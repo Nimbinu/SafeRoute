@@ -22,10 +22,16 @@ function ChangeView({ center, zoom }) {
   return null;
 }
 
-const LeafletMapView = ({ currentLocation, hazards }) => {
-  const defaultCenter = currentLocation 
+const LeafletMapView = ({ currentLocation, hazards, mapCenter, zoomLevel }) => {
+  // Priority: mapCenter from search > currentLocation > default
+  const center = mapCenter 
+    ? [mapCenter.lat, mapCenter.lng]
+    : currentLocation 
     ? [currentLocation.latitude, currentLocation.longitude]
     : [7.8731, 80.7718]; // Default to Sri Lanka
+
+  // Use provided zoomLevel or default to 13
+  const zoom = zoomLevel || 13;
 
   // Create custom icon for user location
   const userIcon = L.divIcon({
@@ -113,8 +119,8 @@ const LeafletMapView = ({ currentLocation, hazards }) => {
 
   return (
     <MapContainer
-      center={defaultCenter}
-      zoom={13}
+      center={center}
+      zoom={zoom}
       style={{ width: '100%', height: '100%', zIndex: 1 }}
       zoomControl={false}
     >
@@ -123,7 +129,7 @@ const LeafletMapView = ({ currentLocation, hazards }) => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       
-      <ChangeView center={defaultCenter} zoom={13} />
+      <ChangeView center={center} zoom={zoom} />
 
       {/* User's current location marker */}
       {currentLocation && (

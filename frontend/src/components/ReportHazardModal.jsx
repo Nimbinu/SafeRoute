@@ -13,6 +13,10 @@ const ReportHazardModal = ({ isOpen, onClose }) => {
   const [error, setError] = useState(null);
   const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [manualLocation, setManualLocation] = useState({ lat: '', lng: '' });
+  const [useManualLocation, setUseManualLocation] = useState(false);
+  const [locationSearch, setLocationSearch] = useState('');
+  const [searchingLocation, setSearchingLocation] = useState(false);
 
   const hazardTypes = [
     'Pothole',
@@ -65,17 +69,57 @@ const ReportHazardModal = ({ isOpen, onClose }) => {
           console.error('Error getting location:', error);
           let errorMessage = 'Unable to get your location. ';
           if (error.code === 1) {
-            errorMessage += 'Please allow location access when prompted by your browser.';
+            errorMessage += 'You can enter location manually below.';
           } else if (error.code === 2) {
-            errorMessage += 'Location service is unavailable.';
+            errorMessage += 'You can enter location manually below.';
           } else {
-            errorMessage += 'Location request timed out.';
+            errorMessage += 'You can enter location manually below.';
           }
           setError(errorMessage);
+          setUseManualLocation(true); // Show manual location input
         }
       );
     } else {
-      setError('Geolocation is not supported by your browser.');
+      setError('Geolocation is not supported. You can enter location manually below.');
+      setUseManualLocation(true);
+    }
+  };
+
+  // Search for location by name
+  const handleLocationSearch = async (e) => {
+    if (e.key === 'Enter' && locationSearch.trim()) {
+      e.preventDefault();
+      setSearchingLocation(true);
+      setError(null);
+
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationSearch)}&limit=1`
+        );
+        const data = await response.json();
+        
+        if (data && data.length > 0) {
+          const result = data[0];
+          const location = {
+            latitude: parseFloat(result.lat),
+            longitude: parseFloat(result.lon)
+          };
+          setCurrentLocation(location);
+          setManualLocation({ lat: result.lat, lng: result.lon });
+          setFormData(prev => ({ 
+            ...prev, 
+            location: result.display_name 
+          }));
+          setUseManualLocation(false);
+        } else {
+          setError('Location not found. Try a different search term or enter coordinates.');
+        }
+      } catch (error) {
+        console.error('Error searching location:', error);
+        setError('Error searching for location. Please try again.');
+      } finally {
+        setSearchingLocation(false);
+      }
     }
   };
 
@@ -98,8 +142,17 @@ const ReportHazardModal = ({ isOpen, onClose }) => {
         throw new Error('⚠️ Please login to report a hazard');
       }
 
-      if (!currentLocation) {
-        throw new Error('⚠️ Location not available. Please allow location access.');
+      // Get location from manual input or GPS
+      let locationToUse = currentLocation;
+      if (useManualLocation && manualLocation.lat && manualLocation.lng) {
+        locationToUse = {
+          latitude: parseFloat(manualLocation.lat),
+          longitude: parseFloat(manualLocation.lng)
+        };
+      }
+
+      if (!locationToUse) {
+        throw new Error('⚠️ Please provide a location (allow GPS or enter manually).');
       }
 
       // Prepare hazard data
@@ -108,8 +161,8 @@ const ReportHazardModal = ({ isOpen, onClose }) => {
         description: formData.description,
         location: {
           type: 'Point',
-          coordinates: [currentLocation.longitude, currentLocation.latitude],
-          address: formData.location || `${currentLocation.latitude}, ${currentLocation.longitude}`
+          coordinates: [locationToUse.longitude, locationToUse.latitude],
+          address: formData.location || `${locationToUse.latitude}, ${locationToUse.longitude}`
         },
         severity: 'Medium' // You can add a severity selector if needed
       };
@@ -391,21 +444,87 @@ const ReportHazardModal = ({ isOpen, onClose }) => {
           {/* Location */}
           <div className="form-group">
             <label className="form-label">Location</label>
-            <div className="location-map">
-              {currentLocation ? (
-                <span className="map-placeholder">
-                  📍 {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}
-                </span>
-              ) : (
-                <span className="map-placeholder">Getting location...</span>
-              )}
+            
+            {/* Location Search Input */}
+            <div style={{ marginBottom: '10px' }}>
+              <input
+                type="text"
+                placeholder="🔍 Type location and press Enter (e.g., 'Colombo', 'Galle Road')"
+                value={locationSearch}
+                onChange={(e) => setLocationSearch(e.target.value)}
+                onKeyPress={handleLocationSearch}
+                className="form-select"
+                disabled={loading || searchingLocation}
+                style={{ 
+                  width: '100%',
+                  paddingLeft: '1rem',
+                  border: !currentLocation ? '2px solid #f59e0b' : '1px solid #d1d5db',
+                  backgroundColor: !currentLocation ? '#fffbeb' : 'white'
+                }}
+              />
+              <p style={{ fontSize: '0.75rem', color: !currentLocation ? '#f59e0b' : '#6b7280', marginTop: '4px', fontWeight: !currentLocation ? '600' : 'normal' }}>
+                {searchingLocation ? '🔍 Searching...' : !currentLocation ? '⚠️ Required: Type a location and press Enter to continue' : '✅ Location set successfully'}
+              </p>
             </div>
-            <p className="location-hint">Location fetched automatically. Click on the map to adjust.</p>
+
+            {/* Current Location Display with Map Preview */}
+            {currentLocation && (
+              <div style={{ marginTop: '15px', border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden' }}>
+                <div style={{ padding: '12px', backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '1.25rem' }}>📍</span>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: '600', color: '#1f2937' }}>
+                        {formData.location || 'Location Set'}
+                      </p>
+                      <p style={{ margin: 0, fontSize: '0.75rem', color: '#6b7280' }}>
+                        {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}
+                      </p>
+                    </div>
+                    <span style={{ fontSize: '0.875rem', color: '#10b981', fontWeight: '600' }}>✓</span>
+                  </div>
+                </div>
+                
+                {/* Google Maps Preview */}
+                <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden' }}>
+                  <iframe
+                    title="Location Preview"
+                    src={`https://maps.google.com/maps?q=${currentLocation.latitude},${currentLocation.longitude}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      border: 0
+                    }}
+                    allowFullScreen
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            )}
+
+            {!currentLocation && (
+              <div className="location-map" style={{ marginTop: '10px', padding: '20px', backgroundColor: '#f3f4f6', borderRadius: '8px', textAlign: 'center' }}>
+                <span className="map-placeholder" style={{ color: '#9ca3af' }}>
+                  🗺️ Map will appear here after you search for a location
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Submit Button */}
-          <button type="submit" className="btn-submit" disabled={loading || !currentLocation}>
-            {loading ? 'Submitting...' : 'Submit Report'}
+          <button 
+            type="submit" 
+            className="btn-submit" 
+            disabled={loading || !currentLocation}
+            style={{
+              opacity: !currentLocation ? 0.5 : 1,
+              cursor: !currentLocation ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {loading ? '⏳ Submitting...' : currentLocation ? '✅ Submit Report' : '⚠️ Search Location First'}
           </button>
         </form>
       </div>

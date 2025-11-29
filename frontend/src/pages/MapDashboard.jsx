@@ -21,6 +21,35 @@ export default function MapDashboard() {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [mapScale, setMapScale] = useState(1);
   const [activeView, setActiveView] = useState('all-alerts'); // 'all-alerts', 'my-routes', 'saved-locations'
+  const [showSettings, setShowSettings] = useState(false);
+
+  // Function to search for a location
+  const handleSearch = async (e) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`
+        );
+        const data = await response.json();
+        
+        if (data && data.length > 0) {
+          const result = data[0];
+          const newCenter = {
+            lat: parseFloat(result.lat),
+            lng: parseFloat(result.lon)
+          };
+          setMapCenter(newCenter);
+          setZoomLevel(13); // Zoom in to the searched location
+          setLocationName(result.display_name.split(',').slice(0, 3).join(','));
+        } else {
+          alert('Location not found. Please try a different search term.');
+        }
+      } catch (error) {
+        console.error('Error searching location:', error);
+        alert('Error searching for location. Please try again.');
+      }
+    }
+  };
 
   // Function to get location name from coordinates
   const getLocationName = async (latitude, longitude) => {
@@ -477,6 +506,7 @@ export default function MapDashboard() {
               placeholder="Search for a location or route"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={handleSearch}
               className="search-input"
             />
           </div>
@@ -487,7 +517,7 @@ export default function MapDashboard() {
               <span className="route-icon">🗺️</span>
               Safe Route
             </button>
-            <button className="btn-settings">⚙️</button>
+            <button className="btn-settings" onClick={() => setShowSettings(true)}>⚙️</button>
             <button className="btn-profile" onClick={() => navigate('/profile')}>👤</button>
           </div>
         </div>
@@ -512,6 +542,8 @@ export default function MapDashboard() {
           <LeafletMapView 
             currentLocation={currentLocation}
             hazards={filteredHazards}
+            mapCenter={mapCenter}
+            zoomLevel={zoomLevel}
           />
 
           {/* Location Status Overlay */}
@@ -762,6 +794,139 @@ export default function MapDashboard() {
           )}
         </div>
       </main>
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }} onClick={() => setShowSettings(false)}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            maxWidth: '500px',
+            width: '90%',
+            maxHeight: '80vh',
+            overflow: 'auto'
+          }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700' }}>⚙️ Settings</h2>
+              <button onClick={() => setShowSettings(false)} style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                color: '#6b7280'
+              }}>×</button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Account Section */}
+              <div>
+                <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '12px', color: '#374151' }}>Account</h3>
+                <button onClick={() => { setShowSettings(false); navigate('/profile'); }} style={{
+                  width: '100%',
+                  padding: '12px',
+                  backgroundColor: '#f3f4f6',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  fontSize: '0.9375rem'
+                }}>
+                  <span>👤</span>
+                  <span>View Profile</span>
+                </button>
+              </div>
+
+              {/* Notifications Section */}
+              <div>
+                <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '12px', color: '#374151' }}>Notifications</h3>
+                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', backgroundColor: '#f3f4f6', borderRadius: '8px', cursor: 'pointer' }}>
+                  <span style={{ fontSize: '0.9375rem' }}>🔔 Hazard Alerts</span>
+                  <input type="checkbox" defaultChecked style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
+                </label>
+              </div>
+
+              {/* Map Settings */}
+              <div>
+                <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '12px', color: '#374151' }}>Map Display</h3>
+                <button onClick={() => { localStorage.removeItem('hasSeenWelcome'); setShowSettings(false); window.location.reload(); }} style={{
+                  width: '100%',
+                  padding: '12px',
+                  backgroundColor: '#f3f4f6',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  fontSize: '0.9375rem'
+                }}>
+                  <span>🔄</span>
+                  <span>Reset Map View</span>
+                </button>
+              </div>
+
+              {/* About Section */}
+              <div>
+                <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '12px', color: '#374151' }}>Information</h3>
+                <button onClick={() => { setShowSettings(false); navigate('/about'); }} style={{
+                  width: '100%',
+                  padding: '12px',
+                  backgroundColor: '#f3f4f6',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  fontSize: '0.9375rem',
+                  marginBottom: '8px'
+                }}>
+                  <span>ℹ️</span>
+                  <span>About SafeRoute</span>
+                </button>
+                <button onClick={() => { 
+                  localStorage.clear();
+                  setShowSettings(false);
+                  navigate('/login');
+                }} style={{
+                  width: '100%',
+                  padding: '12px',
+                  backgroundColor: '#fee2e2',
+                  border: '1px solid #fecaca',
+                  borderRadius: '8px',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  fontSize: '0.9375rem',
+                  color: '#dc2626'
+                }}>
+                  <span>🚪</span>
+                  <span>Logout</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

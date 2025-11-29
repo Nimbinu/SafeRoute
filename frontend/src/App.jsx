@@ -14,7 +14,7 @@ function AppContent() {
   const location = useLocation();
   
   // Pages that don't need the header
-  const noHeaderRoutes = ['/', '/home', '/login', '/register'];
+  const noHeaderRoutes = ['/', '/home', '/login', '/register', '/dashboard'];
   const showHeader = !noHeaderRoutes.includes(location.pathname);
 
   return (

@@ -83,19 +83,35 @@ exports.calculateRoute = async (req, res) => {
     const midLat = (origin.coordinates[1] + destination.coordinates[1]) / 2;
     const midLon = (origin.coordinates[0] + destination.coordinates[0]) / 2;
 
-    const nearbyHazards = await Hazard.find({
-      isActive: true,
-      status: { $in: ['Pending', 'Verified'] },
-      location: {
-        $near: {
-          $geometry: {
-            type: 'Point',
-            coordinates: [midLon, midLat]
-          },
-          $maxDistance: 5000 // 5km
+    let nearbyHazards = [];
+    try {
+      // Try to use geospatial query
+      nearbyHazards = await Hazard.find({
+        isActive: true,
+        status: { $in: ['Pending', 'Verified'] },
+        location: {
+          $near: {
+            $geometry: {
+              type: 'Point',
+              coordinates: [midLon, midLat]
+            },
+            $maxDistance: 5000 // 5km
+          }
         }
-      }
-    }).populate('reportedBy', 'fullName');
+      })
+      .limit(50)
+      .populate('reportedBy', 'fullName')
+      .maxTimeMS(5000); // 5 second timeout
+    } catch (geoError) {
+      console.warn('Geospatial query failed, falling back to simple query:', geoError.message);
+      // Fallback to simple query without geospatial index
+      nearbyHazards = await Hazard.find({
+        isActive: true,
+        status: { $in: ['Pending', 'Verified'] }
+      })
+      .limit(50)
+      .populate('reportedBy', 'fullName');
+    }
 
     // Calculate approximate distance between origin and destination
     const totalDistance = calculateDistance(
