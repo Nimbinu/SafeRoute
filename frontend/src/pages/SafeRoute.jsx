@@ -329,14 +329,23 @@ export default function SafeRoute() {
 
   return (
     <div className="safe-route-page">
-      {/* Left Sidebar */}
       <aside className="route-sidebar">
-        {/* Logo */}
         <div className="route-header">
           <div className="route-logo" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
             <div className="route-logo-icon">🛡️</div>
             <span className="route-logo-text">SafeRoute</span>
           </div>
+          <button 
+            onClick={() => navigate('/profile')} 
+            className="profile-nav-button"
+            title="Go to Profile"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            Profile
+          </button>
         </div>
 
         {/* Main Content */}

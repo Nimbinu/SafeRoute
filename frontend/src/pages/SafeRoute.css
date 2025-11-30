@@ -18,6 +18,9 @@
 .route-header {
   padding: 1.5rem 1.5rem 1rem 1.5rem;
   border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .route-logo {
@@ -41,6 +44,39 @@
   font-size: 1.25rem;
   font-weight: 700;
   color: #2563eb;
+}
+
+.profile-nav-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.profile-nav-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.profile-nav-button:active {
+  transform: translateY(0);
+}
+
+.profile-nav-button svg {
+  transition: transform 0.2s ease;
+}
+
+.profile-nav-button:hover svg {
+  transform: scale(1.1);
 }
 
 /* Main Content */
