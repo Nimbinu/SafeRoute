@@ -1,6 +1,56 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import './SafeRoute.css';
+
+// Fix for default marker icons in Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Custom marker icons
+const startIcon = new L.Icon({
+  iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNSIgaGVpZ2h0PSI0MSIgdmlld0JveD0iMCAwIDI1IDQxIj48cGF0aCBmaWxsPSIjMTBiOTgxIiBkPSJNMTIuNSAwQzUuNiAwIDAgNS42IDAgMTIuNWMwIDguNyAxMi41IDI4LjUgMTIuNSAyOC41UzI1IDIxLjIgMjUgMTIuNUMyNSA1LjYgMTkuNCAwIDEyLjUgMHptMCAxN2MtMi41IDAtNC41LTItNC41LTQuNXMyLTQuNSA0LjUtNC41IDQuNSAyIDQuNSA0LjUtMiA0LjUtNC41IDQuNXoiLz48L3N2Zz4=',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+});
+
+const endIcon = new L.Icon({
+  iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNSIgaGVpZ2h0PSI0MSIgdmlld0JveD0iMCAwIDI1IDQxIj48cGF0aCBmaWxsPSIjZGMyNjI2IiBkPSJNMTIuNSAwQzUuNiAwIDAgNS42IDAgMTIuNWMwIDguNyAxMi41IDI4LjUgMTIuNSAyOC41UzI1IDIxLjIgMjUgMTIuNUMyNSA1LjYgMTkuNCAwIDEyLjUgMHptMCAxN2MtMi41IDAtNC41LTItNC41LTQuNXMyLTQuNSA0LjUtNC41IDQuNSAyIDQuNSA0LjUtMiA0LjUtNC41IDQuNXoiLz48L3N2Zz4=',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+});
+
+const hazardIcon = new L.Icon({
+  iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSIjZjU5ZTBiIiBkPSJNMSAyMWgyMkwxMiAyIDEgMjF6bTEyLTNoLTJ2LTJoMnYyem0wLTRoLTJ2LTRoMnY0eiIvPjwvc3ZnPg==',
+  iconSize: [30, 30],
+  iconAnchor: [15, 30],
+  popupAnchor: [0, -30],
+});
+
+// Component to fit map bounds when routes change
+function MapBounds({ fromCoords, toCoords }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (fromCoords && toCoords) {
+      const bounds = L.latLngBounds(
+        [fromCoords.latitude, fromCoords.longitude],
+        [toCoords.latitude, toCoords.longitude]
+      );
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [fromCoords, toCoords, map]);
+  
+  return null;
+}
 
 export default function SafeRoute() {
   const navigate = useNavigate();
@@ -251,7 +301,23 @@ export default function SafeRoute() {
       }
 
       console.log('Route calculated:', data);
-      setRouteData(data.data.route);
+      
+      // Transform the route data for display
+      const transformedData = {
+        routes: data.data.route.routes.map(route => ({
+          type: route.routeType,
+          distance: route.distance,
+          duration: route.duration,
+          safetyScore: route.safetyScore,
+          hazardsCount: route.hazardCount,
+          polyline: route.polyline
+        })),
+        hazardsOnRoute: data.data.nearbyHazards || []
+      };
+      
+      setRouteData(transformedData);
+      setFromCoords(originCoords);
+      setToCoords(destCoords);
       setError(null);
     } catch (err) {
       console.error('Error calculating route:', err);
@@ -537,6 +603,25 @@ export default function SafeRoute() {
           {/* Route Information */}
           {routeData && routeData.routes && routeData.routes.length > 0 && (
             <div className="route-info-section">
+              {/* Summary Header */}
+              <div style={{
+                backgroundColor: '#f0f9ff',
+                padding: '15px',
+                borderRadius: '8px',
+                marginBottom: '20px',
+                border: '1px solid #bfdbfe'
+              }}>
+                <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#1e40af', marginBottom: '8px' }}>
+                  ✅ Route Calculated Successfully
+                </h2>
+                <p style={{ fontSize: '14px', color: '#3b82f6', marginBottom: '8px' }}>
+                  From: <strong>{fromLocationName || fromLocation}</strong>
+                </p>
+                <p style={{ fontSize: '14px', color: '#3b82f6', marginBottom: '0' }}>
+                  To: <strong>{toLocationName || toLocation}</strong>
+                </p>
+              </div>
+
               <h2 className="info-title">Route Options</h2>
 
               {/* Display all three routes */}
@@ -622,10 +707,10 @@ export default function SafeRoute() {
                         fontSize: '13px'
                       }}>
                         <div style={{ fontWeight: '600', color: '#1f2937', marginBottom: '4px' }}>
-                          {hazard.hazardType}
+                          {hazard.type || 'Unknown Hazard'}
                         </div>
                         <div style={{ color: '#6b7280', marginBottom: '4px' }}>
-                          {hazard.description}
+                          {hazard.description || 'No description available'}
                         </div>
                         <div style={{ display: 'flex', gap: '8px', fontSize: '11px' }}>
                           <span style={{
@@ -637,10 +722,10 @@ export default function SafeRoute() {
                             padding: '2px 8px',
                             borderRadius: '10px'
                           }}>
-                            {hazard.severity}
+                            {hazard.severity || 'Unknown'}
                           </span>
                           <span style={{ color: '#6b7280' }}>
-                            {hazard.status}
+                            {hazard.status || 'Unknown'}
                           </span>
                         </div>
                       </div>
@@ -678,20 +763,197 @@ export default function SafeRoute() {
 
       {/* Map Area */}
       <main className="route-map-area">
-        <div className="map-placeholder">
-          <div className="map-overlay">
+        {fromCoords && toCoords ? (
+          <MapContainer
+            center={[fromCoords.latitude, fromCoords.longitude]}
+            zoom={13}
+            style={{ height: '100%', width: '100%' }}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            
+            <MapBounds fromCoords={fromCoords} toCoords={toCoords} />
+            
+            {/* Start Marker */}
+            <Marker position={[fromCoords.latitude, fromCoords.longitude]} icon={startIcon}>
+              <Popup>
+                <strong>Start Location</strong><br />
+                {fromLocationName || fromLocation}
+              </Popup>
+            </Marker>
+            
+            {/* End Marker */}
+            <Marker position={[toCoords.latitude, toCoords.longitude]} icon={endIcon}>
+              <Popup>
+                <strong>Destination</strong><br />
+                {toLocationName || toLocation}
+              </Popup>
+            </Marker>
+            
+            {/* Route Lines */}
+            {routeData && routeData.routes && routeData.routes.map((route, idx) => {
+              const colors = { safest: '#10b981', fastest: '#3b82f6', shortest: '#f59e0b' };
+              const positions = [
+                [fromCoords.latitude, fromCoords.longitude],
+                [toCoords.latitude, toCoords.longitude]
+              ];
+              
+              return (
+                <Polyline
+                  key={idx}
+                  positions={positions}
+                  color={colors[route.type]}
+                  weight={route.type === 'safest' ? 5 : 3}
+                  opacity={route.type === 'safest' ? 0.8 : 0.5}
+                >
+                  <Popup>
+                    <strong>{route.type.charAt(0).toUpperCase() + route.type.slice(1)} Route</strong><br />
+                    Distance: {(route.distance / 1000).toFixed(2)} km<br />
+                    Time: {Math.round(route.duration / 60)} min<br />
+                    Safety: {route.safetyScore}/100
+                  </Popup>
+                </Polyline>
+              );
+            })}
+            
+            {/* Hazard Markers */}
+            {routeData && routeData.hazardsOnRoute && routeData.hazardsOnRoute.map((hazard, idx) => {
+              if (hazard.location && hazard.location.coordinates) {
+                const [lon, lat] = hazard.location.coordinates;
+                return (
+                  <Marker key={idx} position={[lat, lon]} icon={hazardIcon}>
+                    <Popup>
+                      <strong style={{ color: '#dc2626' }}>⚠️ {hazard.type || 'Hazard'}</strong><br />
+                      <span style={{ fontSize: '12px' }}>{hazard.description || 'No description'}</span><br />
+                      <span style={{
+                        display: 'inline-block',
+                        marginTop: '4px',
+                        padding: '2px 8px',
+                        borderRadius: '10px',
+                        fontSize: '11px',
+                        backgroundColor: hazard.severity === 'Critical' ? '#dc2626' :
+                                       hazard.severity === 'High' ? '#ea580c' :
+                                       hazard.severity === 'Medium' ? '#f59e0b' : '#10b981',
+                        color: 'white'
+                      }}>
+                        {hazard.severity}
+                      </span>
+                    </Popup>
+                  </Marker>
+                );
+              }
+              return null;
+            })}
+          </MapContainer>
+        ) : (
+          <div className="map-placeholder">
+            <div className="map-overlay">
             {loading ? (
               <>
                 <p className="map-message">🔄 Calculating routes...</p>
                 <p className="map-submessage">Analyzing safety along the route</p>
               </>
             ) : routeData ? (
-              <>
+              <div style={{ textAlign: 'center', padding: '20px' }}>
                 <p className="map-message">✅ Routes Calculated</p>
-                <p className="map-submessage">
-                  Found {routeData.routes.length} route options with {routeData.hazardsOnRoute.length} hazards detected
+                <p className="map-submessage" style={{ marginBottom: '20px' }}>
+                  Found {routeData.routes.length} route options
                 </p>
-              </>
+                
+                {/* Route Summary Cards */}
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(3, 1fr)', 
+                  gap: '15px',
+                  maxWidth: '800px',
+                  margin: '0 auto'
+                }}>
+                  {routeData.routes.map((route, idx) => {
+                    const icons = { safest: '🛡️', fastest: '⚡', shortest: '📏' };
+                    const colors = { safest: '#10b981', fastest: '#3b82f6', shortest: '#f59e0b' };
+                    
+                    return (
+                      <div key={idx} style={{
+                        backgroundColor: 'white',
+                        padding: '15px',
+                        borderRadius: '12px',
+                        border: `2px solid ${colors[route.type]}`,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                      }}>
+                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>
+                          {icons[route.type]}
+                        </div>
+                        <div style={{ 
+                          fontWeight: '600', 
+                          fontSize: '14px', 
+                          color: '#1f2937',
+                          marginBottom: '8px',
+                          textTransform: 'capitalize'
+                        }}>
+                          {route.type}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>
+                          {(route.distance / 1000).toFixed(1)} km
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>
+                          {Math.round(route.duration / 60)} min
+                        </div>
+                        <div style={{
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          color: route.safetyScore >= 80 ? '#10b981' : 
+                                 route.safetyScore >= 60 ? '#f59e0b' : '#ef4444',
+                          marginTop: '8px'
+                        }}>
+                          Safety: {route.safetyScore}/100
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Hazards Info */}
+                {routeData.hazardsOnRoute && routeData.hazardsOnRoute.length > 0 && (
+                  <div style={{
+                    marginTop: '20px',
+                    padding: '12px',
+                    backgroundColor: '#fee',
+                    borderRadius: '8px',
+                    border: '1px solid #fecaca'
+                  }}>
+                    <p style={{ 
+                      color: '#dc2626', 
+                      fontSize: '14px', 
+                      fontWeight: '600',
+                      margin: 0
+                    }}>
+                      ⚠️ {routeData.hazardsOnRoute.length} hazard{routeData.hazardsOnRoute.length !== 1 ? 's' : ''} detected near routes
+                    </p>
+                  </div>
+                )}
+                
+                {/* Recommendation */}
+                {routeData.routes.length > 0 && (
+                  <div style={{
+                    marginTop: '20px',
+                    padding: '12px',
+                    backgroundColor: '#f0fdf4',
+                    borderRadius: '8px',
+                    border: '1px solid #86efac'
+                  }}>
+                    <p style={{ 
+                      color: '#15803d', 
+                      fontSize: '14px', 
+                      fontWeight: '600',
+                      margin: 0
+                    }}>
+                      💡 Recommended: {routeData.routes.find(r => r.type === 'safest') ? 'Safest Route' : routeData.routes[0].type.charAt(0).toUpperCase() + routeData.routes[0].type.slice(1) + ' Route'}
+                    </p>
+                  </div>
+                )}
+              </div>
             ) : (
               <>
                 <p className="map-message">🗺️ Route Map</p>
@@ -699,14 +961,8 @@ export default function SafeRoute() {
               </>
             )}
           </div>
-        </div>
-
-        {/* Map Controls */}
-        <div className="map-controls">
-          <button className="map-control-btn">+</button>
-          <button className="map-control-btn">−</button>
-          <button className="map-control-btn">📍</button>
-        </div>
+          </div>
+        )}
       </main>
     </div>
   );
