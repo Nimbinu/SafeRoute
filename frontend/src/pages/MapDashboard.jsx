@@ -22,6 +22,17 @@ export default function MapDashboard() {
   const [mapScale, setMapScale] = useState(1);
   const [activeView, setActiveView] = useState('all-alerts'); // 'all-alerts', 'my-routes', 'saved-locations'
   const [showSettings, setShowSettings] = useState(false);
+  const [savedRoutes, setSavedRoutes] = useState([]);
+  const [savedLocations, setSavedLocations] = useState([]);
+  const [loadingRoutes, setLoadingRoutes] = useState(false);
+  const [loadingLocations, setLoadingLocations] = useState(false);
+  const [showSaveLocationModal, setShowSaveLocationModal] = useState(false);
+  const [clickedLocation, setClickedLocation] = useState(null);
+  const [locationForm, setLocationForm] = useState({
+    locationName: '',
+    category: 'Other',
+    notes: ''
+  });
 
   // Function to search for a location
   const handleSearch = async (e) => {
@@ -216,6 +227,180 @@ export default function MapDashboard() {
     time: timeAgo(hazard.createdAt),
     icon: getHazardIcon(hazard.hazardType)
   }));
+
+  // Fetch saved routes when 'my-routes' view is active
+  useEffect(() => {
+    if (activeView === 'my-routes') {
+      fetchSavedRoutes();
+    }
+  }, [activeView]);
+
+  // Fetch saved locations when 'saved-locations' view is active
+  useEffect(() => {
+    if (activeView === 'saved-locations') {
+      fetchSavedLocations();
+    }
+  }, [activeView]);
+
+  const fetchSavedRoutes = async () => {
+    setLoadingRoutes(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('http://localhost:5004/api/saved-routes', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setSavedRoutes(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching saved routes:', error);
+    } finally {
+      setLoadingRoutes(false);
+    }
+  };
+
+  const fetchSavedLocations = async () => {
+    setLoadingLocations(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('http://localhost:5004/api/saved-locations', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setSavedLocations(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching saved locations:', error);
+    } finally {
+      setLoadingLocations(false);
+    }
+  };
+
+  const handleDeleteRoute = async (routeId) => {
+    if (!window.confirm('Delete this saved route?')) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5004/api/saved-routes/${routeId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        fetchSavedRoutes(); // Refresh list
+      }
+    } catch (error) {
+      console.error('Error deleting route:', error);
+      alert('Failed to delete route');
+    }
+  };
+
+  const handleDeleteLocation = async (locationId) => {
+    if (!window.confirm('Delete this saved location?')) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5004/api/saved-locations/${locationId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        fetchSavedLocations(); // Refresh list
+      }
+    } catch (error) {
+      console.error('Error deleting location:', error);
+      alert('Failed to delete location');
+    }
+  };
+
+  // Handle map click to save location
+  const handleMapClick = async (lat, lng) => {
+    try {
+      // Reverse geocode to get address
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
+      );
+      const data = await response.json();
+      
+      const address = data.display_name || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+      
+      setClickedLocation({
+        lat,
+        lng,
+        address
+      });
+      setShowSaveLocationModal(true);
+    } catch (error) {
+      console.error('Error getting location details:', error);
+      setClickedLocation({
+        lat,
+        lng,
+        address: `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+      });
+      setShowSaveLocationModal(true);
+    }
+  };
+
+  const handleSaveLocation = async () => {
+    if (!locationForm.locationName.trim()) {
+      alert('Please enter a location name');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5004/api/saved-locations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          locationName: locationForm.locationName.trim(),
+          address: clickedLocation.address,
+          coordinates: {
+            lat: clickedLocation.lat,
+            lng: clickedLocation.lng
+          },
+          category: locationForm.category,
+          notes: locationForm.notes
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setShowSaveLocationModal(false);
+        setLocationForm({ locationName: '', category: 'Other', notes: '' });
+        setClickedLocation(null);
+        fetchSavedLocations(); // Refresh the list
+        alert('Location saved successfully!');
+      } else {
+        alert(data.message || 'Failed to save location');
+      }
+    } catch (error) {
+      console.error('Error saving location:', error);
+      alert('Failed to save location');
+    }
+  };
 
   // Map control functions
   const handleZoomIn = () => {
@@ -430,45 +615,229 @@ export default function MapDashboard() {
             )}
 
             {activeView === 'my-routes' && (
-              <div style={{ padding: '20px', textAlign: 'center' }}>
-                <div style={{ fontSize: '48px', marginBottom: '15px' }}>🗺️</div>
-                <h3 style={{ fontSize: '16px', color: '#1f2937', marginBottom: '8px' }}>
-                  No saved routes yet
-                </h3>
-                <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '20px' }}>
-                  Create and save your frequently used routes for quick access
-                </p>
-                <button 
-                  onClick={() => navigate('/safe-route')}
-                  style={{
-                    padding: '10px 20px',
-                    backgroundColor: '#2563eb',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}
-                >
-                  Create Route
-                </button>
-              </div>
+              <>
+                {loadingRoutes ? (
+                  <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+                    Loading routes...
+                  </div>
+                ) : savedRoutes.length === 0 ? (
+                  <div style={{ padding: '20px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '48px', marginBottom: '15px' }}>🗺️</div>
+                    <h3 style={{ fontSize: '16px', color: '#1f2937', marginBottom: '8px' }}>
+                      No saved routes yet
+                    </h3>
+                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '20px' }}>
+                      Create and save your frequently used routes for quick access
+                    </p>
+                    <button 
+                      onClick={() => navigate('/safe-route')}
+                      style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#2563eb',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                      }}
+                    >
+                      Create Route
+                    </button>
+                  </div>
+                ) : (
+                  savedRoutes.map((route) => (
+                    <div key={route._id} style={{
+                      backgroundColor: 'white',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      marginBottom: '10px',
+                      border: '1px solid #e5e7eb',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: '600', color: '#1f2937', marginBottom: '4px', fontSize: '14px' }}>
+                            🗺️ {route.routeName}
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '2px' }}>
+                            From: {route.startLocation.address}
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                            To: {route.endLocation.address}
+                          </div>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteRoute(route._id);
+                          }}
+                          style={{
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            color: '#dc2626',
+                            cursor: 'pointer',
+                            padding: '4px',
+                            fontSize: '18px'
+                          }}
+                          title="Delete route"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px', fontSize: '11px' }}>
+                        <span style={{
+                          padding: '2px 8px',
+                          backgroundColor: '#dbeafe',
+                          color: '#1e40af',
+                          borderRadius: '10px',
+                          textTransform: 'capitalize'
+                        }}>
+                          {route.preferredRouteType}
+                        </span>
+                        {route.isFavorite && (
+                          <span style={{ padding: '2px 8px', backgroundColor: '#fef3c7', color: '#92400e', borderRadius: '10px' }}>
+                            ⭐ Favorite
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => navigate('/safe-route', { state: { savedRoute: route } })}
+                        style={{
+                          width: '100%',
+                          marginTop: '10px',
+                          padding: '8px',
+                          backgroundColor: '#2563eb',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '13px',
+                          fontWeight: '500',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Load Route
+                      </button>
+                    </div>
+                  ))
+                )}
+              </>
             )}
 
             {activeView === 'saved-locations' && (
-              <div style={{ padding: '20px', textAlign: 'center' }}>
-                <div style={{ fontSize: '48px', marginBottom: '15px' }}>📍</div>
-                <h3 style={{ fontSize: '16px', color: '#1f2937', marginBottom: '8px' }}>
-                  No saved locations
-                </h3>
-                <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '20px' }}>
-                  Save your favorite places like home, work, or frequent destinations
-                </p>
-                <p style={{ fontSize: '13px', color: '#9ca3af', fontStyle: 'italic' }}>
-                  💡 Tip: Click on any location on the map to save it
-                </p>
-              </div>
+              <>
+                {loadingLocations ? (
+                  <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+                    Loading locations...
+                  </div>
+                ) : savedLocations.length === 0 ? (
+                  <div style={{ padding: '20px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '48px', marginBottom: '15px' }}>📍</div>
+                    <h3 style={{ fontSize: '16px', color: '#1f2937', marginBottom: '8px' }}>
+                      No saved locations
+                    </h3>
+                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '20px' }}>
+                      Save your favorite places like home, work, or frequent destinations
+                    </p>
+                    <p style={{ fontSize: '13px', color: '#9ca3af', fontStyle: 'italic' }}>
+                      💡 Tip: Click on the map to save a location
+                    </p>
+                  </div>
+                ) : (
+                  savedLocations.map((location) => {
+                    const categoryIcons = {
+                      'Home': '🏠',
+                      'Work': '💼',
+                      'School': '🎓',
+                      'Favorite': '⭐',
+                      'Other': '📍'
+                    };
+                    
+                    return (
+                      <div key={location._id} style={{
+                        backgroundColor: 'white',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        marginBottom: '10px',
+                        border: '1px solid #e5e7eb',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '6px' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: '600', color: '#1f2937', marginBottom: '4px', fontSize: '14px' }}>
+                              {categoryIcons[location.category] || location.icon} {location.locationName}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>
+                              {location.address}
+                            </div>
+                            {location.notes && (
+                              <div style={{ fontSize: '11px', color: '#9ca3af', fontStyle: 'italic' }}>
+                                "{location.notes}"
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteLocation(location._id);
+                            }}
+                            style={{
+                              backgroundColor: 'transparent',
+                              border: 'none',
+                              color: '#dc2626',
+                              cursor: 'pointer',
+                              padding: '4px',
+                              fontSize: '18px'
+                            }}
+                            title="Delete location"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                        <div style={{ display: 'flex', gap: '6px', fontSize: '11px', marginBottom: '8px' }}>
+                          <span style={{
+                            padding: '2px 8px',
+                            backgroundColor: '#f3f4f6',
+                            color: '#374151',
+                            borderRadius: '10px'
+                          }}>
+                            {location.category}
+                          </span>
+                          <span style={{ color: '#9ca3af' }}>
+                            Used {location.usageCount || 0}x
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setMapCenter({ lat: location.coordinates.lat, lng: location.coordinates.lng });
+                            setZoomLevel(15);
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            backgroundColor: '#10b981',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontSize: '13px',
+                            fontWeight: '500',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          View on Map
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+              </>
             )}
           </div>
         </div>
@@ -544,6 +913,7 @@ export default function MapDashboard() {
             hazards={filteredHazards}
             mapCenter={mapCenter}
             zoomLevel={zoomLevel}
+            onMapClick={handleMapClick}
           />
 
           {/* Location Status Overlay */}
@@ -923,6 +1293,141 @@ export default function MapDashboard() {
                   <span>Logout</span>
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Save Location Modal */}
+      {showSaveLocationModal && clickedLocation && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            padding: '30px',
+            maxWidth: '500px',
+            width: '100%',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)'
+          }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '10px' }}>
+              📍 Save Location
+            </h2>
+            <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '20px' }}>
+              {clickedLocation.address}
+            </p>
+
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '8px' }}>
+                Location Name *
+              </label>
+              <input
+                type="text"
+                value={locationForm.locationName}
+                onChange={(e) => setLocationForm({ ...locationForm, locationName: e.target.value })}
+                placeholder="e.g., Home, Office, Mom's Place"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '8px',
+                  fontSize: '14px'
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '8px' }}>
+                Category
+              </label>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {['Home', 'Work', 'School', 'Favorite', 'Other'].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setLocationForm({ ...locationForm, category: cat })}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: locationForm.category === cat ? '#2563eb' : '#f3f4f6',
+                      color: locationForm.category === cat ? 'white' : '#6b7280',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '8px' }}>
+                Notes (Optional)
+              </label>
+              <textarea
+                value={locationForm.notes}
+                onChange={(e) => setLocationForm({ ...locationForm, notes: e.target.value })}
+                placeholder="Add any notes about this location..."
+                rows={3}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  resize: 'vertical'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => {
+                  setShowSaveLocationModal(false);
+                  setLocationForm({ locationName: '', category: 'Other', notes: '' });
+                  setClickedLocation(null);
+                }}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  backgroundColor: '#f3f4f6',
+                  color: '#6b7280',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveLocation}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  backgroundColor: '#10b981',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                Save Location
+              </button>
             </div>
           </div>
         </div>

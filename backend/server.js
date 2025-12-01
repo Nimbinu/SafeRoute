@@ -16,6 +16,8 @@ const adminRoutes = require('./routes/admin');
 const aboutRoutes = require('./routes/about');
 const uploadRoutes = require('./routes/upload');
 const locationRoutes = require('./routes/location');
+const savedRoutesRoutes = require('./routes/savedRoutes');
+const savedLocationsRoutes = require('./routes/savedLocations');
 
 // Initialize Express app
 const app = express();
@@ -55,6 +57,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/about', aboutRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/location', locationRoutes);
+app.use('/api/saved-routes', savedRoutesRoutes);
+app.use('/api/saved-locations', savedLocationsRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

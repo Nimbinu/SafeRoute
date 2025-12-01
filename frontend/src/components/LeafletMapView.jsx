@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -22,7 +22,19 @@ function ChangeView({ center, zoom }) {
   return null;
 }
 
-const LeafletMapView = ({ currentLocation, hazards, mapCenter, zoomLevel }) => {
+// Component to handle map clicks
+function MapClickHandler({ onMapClick }) {
+  useMapEvents({
+    click: (e) => {
+      if (onMapClick) {
+        onMapClick(e.latlng.lat, e.latlng.lng);
+      }
+    }
+  });
+  return null;
+}
+
+const LeafletMapView = ({ currentLocation, hazards, mapCenter, zoomLevel, onMapClick }) => {
   // Priority: mapCenter from search > currentLocation > default
   const center = mapCenter 
     ? [mapCenter.lat, mapCenter.lng]
@@ -130,6 +142,9 @@ const LeafletMapView = ({ currentLocation, hazards, mapCenter, zoomLevel }) => {
       />
       
       <ChangeView center={center} zoom={zoom} />
+      
+      {/* Map click handler for saving locations */}
+      {onMapClick && <MapClickHandler onMapClick={onMapClick} />}
 
       {/* User's current location marker */}
       {currentLocation && (
