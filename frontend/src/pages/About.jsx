@@ -7,11 +7,16 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5004
 const About = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [content, setContent] = useState(null);
   const [teamMembers, setTeamMembers] = useState([]);
   const [faqs, setFaqs] = useState([]);
   const [error, setError] = useState(null);
-  const [activeCategory, setActiveCategory] = useState('All');
+  const [expandedFaq, setExpandedFaq] = useState(null);
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
 
   useEffect(() => {
     fetchAboutData();
@@ -21,25 +26,14 @@ const About = () => {
     try {
       setLoading(true);
 
-      // Fetch all about data in parallel
-      const [contentRes, teamRes, faqRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/about/content`),
+      // Fetch team and FAQ data
+      const [teamRes, faqRes] = await Promise.all([
         fetch(`${API_BASE_URL}/api/about/team`),
         fetch(`${API_BASE_URL}/api/about/faq`)
       ]);
 
-      const contentData = await contentRes.json();
       const teamData = await teamRes.json();
       const faqData = await faqRes.json();
-
-      if (contentData.success) {
-        // Organize content by section
-        const organizedContent = {};
-        contentData.data.content.forEach(item => {
-          organizedContent[item.section] = item;
-        });
-        setContent(organizedContent);
-      }
 
       if (teamData.success) {
         setTeamMembers(teamData.data.teamMembers);
@@ -57,23 +51,15 @@ const About = () => {
     }
   };
 
-  const getCategories = () => {
-    const categories = ['All'];
-    faqs.forEach(faq => {
-      if (!categories.includes(faq.category)) {
-        categories.push(faq.category);
-      }
-    });
-    return categories;
+  const handleContactSubmit = (e) => {
+    e.preventDefault();
+    alert('Message sent! We will get back to you soon.');
+    setContactForm({ name: '', email: '', subject: '', message: '' });
   };
-
-  const filteredFaqs = activeCategory === 'All' 
-    ? faqs 
-    : faqs.filter(faq => faq.category === activeCategory);
 
   if (loading) {
     return (
-      <div className="about-page">
+      <div className="about-page-new">
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '48px', marginBottom: '20px' }}>🔄</div>
@@ -86,7 +72,7 @@ const About = () => {
 
   if (error) {
     return (
-      <div className="about-page">
+      <div className="about-page-new">
         <div style={{ textAlign: 'center', padding: '40px' }}>
           <p style={{ fontSize: '48px', marginBottom: '10px' }}>⚠️</p>
           <p style={{ fontSize: '18px', color: '#ef4444', marginBottom: '20px' }}>{error}</p>
@@ -110,109 +96,90 @@ const About = () => {
   }
 
   return (
-    <div className="about-page">
+    <div className="about-page-new">
       {/* Header Navigation */}
-      <header className="about-header">
-        <div className="header-container">
-          <div className="header-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-            <span className="header-logo-icon">🚗</span>
-            <span className="header-logo-text">SafeRoute</span>
+      <header className="about-header-new">
+        <div className="header-container-new">
+          <div className="header-logo-new" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+            <span style={{ fontSize: '24px', marginRight: '8px' }}>🛡️</span>
+            <span style={{ fontSize: '18px', fontWeight: '700' }}>SafeRoute</span>
           </div>
 
-          <nav className="header-nav">
-            <button onClick={() => navigate('/')} className="nav-link">Home</button>
-            <button onClick={() => navigate('/dashboard')} className="nav-link">Live Map</button>
-            <button onClick={() => navigate('/safe-route')} className="nav-link">Safe Route</button>
-            <button className="nav-link active">About</button>
+          <nav className="header-nav-new">
+            <button onClick={() => navigate('/')} className="nav-link-new">Home</button>
+            <button onClick={() => navigate('/dashboard')} className="nav-link-new">Map</button>
+            <button className="nav-link-new active">About Us</button>
           </nav>
 
-          <div className="header-right">
-            <button className="btn-login" onClick={() => navigate('/login')}>Login</button>
-            <button className="btn-register" onClick={() => navigate('/register')}>Register</button>
+          <div className="header-right-new">
+            <button className="btn-login-new" onClick={() => navigate('/login')}>Login</button>
+            <button className="btn-signup-new" onClick={() => navigate('/register')}>Sign Up</button>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="about-hero">
-        <div className="hero-content-wrapper">
-          <h1 className="about-hero-title">
-            {content?.hero?.title || 'About SafeRoute'}
-          </h1>
-          <p className="about-hero-description">
-            {content?.hero?.content || 'Building safer roads through community-driven hazard reporting and intelligent route planning.'}
+      <section className="hero-section-new">
+        <div className="hero-content-new">
+          <h1 className="hero-title-new">Making Roads Safer for Everyone.</h1>
+          <p className="hero-subtitle-new">
+            SafeRoute provides real-time, crowd-sourced data to help you avoid road hazards and find the safest route to your destination.
           </p>
         </div>
       </section>
 
       {/* Mission Section */}
-      <section className="about-section mission-section">
-        <div className="section-container">
-          <div className="section-header">
-            <span className="section-icon">🎯</span>
-            <h2 className="section-title">
-              {content?.mission?.title || 'Our Mission'}
-            </h2>
-          </div>
-          <p className="section-text">
-            {content?.mission?.content || 'At SafeRoute, our mission is to create a safer driving experience for everyone by leveraging real-time community reporting and smart routing technology. We believe that together, we can reduce accidents and make roads safer for all travelers.'}
+      <section className="mission-section-new">
+        <div className="section-container-new">
+          <h2 className="section-title-new">Our Mission</h2>
+          <p className="mission-text-new">
+            At SafeRoute, our mission is to create a community of drivers who work together to make our roads safer. By reporting and receiving real-time updates on road hazards, we can all contribute to a safer driving experience for everyone. Our platform leverages cutting-edge technology to provide you with the most accurate and up-to-date information, ensuring you always have a safe and reliable journey ahead.
           </p>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="about-section features-section">
-        <div className="section-container">
-          <h2 className="section-title-center">
-            {content?.features?.title || 'Key Features'}
-          </h2>
+      {/* How It Works Section */}
+      <section className="how-it-works-section-new">
+        <div className="section-container-new">
+          <h2 className="section-title-new">How It Works</h2>
           
-          <div className="features-grid">
-            <div className="feature-card">
-              <div className="feature-icon">📍</div>
-              <h3 className="feature-title">Real-Time Reporting</h3>
-              <p className="feature-description">
-                Report road hazards instantly and help other drivers stay safe. Your reports are verified by our team and shared with the community.
+          <div className="features-grid-new">
+            <div className="feature-card-new">
+              <div className="feature-icon-new">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 6v6l4 2"/>
+                </svg>
+              </div>
+              <h3 className="feature-title-new">Report Hazards</h3>
+              <p className="feature-desc-new">
+                Easily report accidents, potholes, or other dangers on the road.
               </p>
             </div>
 
-            <div className="feature-card">
-              <div className="feature-icon">🗺️</div>
-              <h3 className="feature-title">Smart Routing</h3>
-              <p className="feature-description">
-                Get intelligent route suggestions that avoid reported hazards, saving you time and ensuring a safer journey.
+            <div className="feature-card-new">
+              <div className="feature-icon-new">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2">
+                  <path d="M22 17H2a3 3 0 003-3V9a3 3 0 00-3-3h20a3 3 0 00-3 3v5a3 3 0 003 3z"/>
+                  <path d="M6 12h.01M10 12h.01M14 12h.01M18 12h.01"/>
+                </svg>
+              </div>
+              <h3 className="feature-title-new">Receive Alerts</h3>
+              <p className="feature-desc-new">
+                Get instant notifications about hazards on your planned route.
               </p>
             </div>
 
-            <div className="feature-card">
-              <div className="feature-icon">👥</div>
-              <h3 className="feature-title">Community-Driven</h3>
-              <p className="feature-description">
-                Join thousands of users contributing to road safety. Together, we create a comprehensive hazard map.
-              </p>
-            </div>
-
-            <div className="feature-card">
-              <div className="feature-icon">🔔</div>
-              <h3 className="feature-title">Live Alerts</h3>
-              <p className="feature-description">
-                Receive notifications about hazards near your location or along your planned route in real-time.
-              </p>
-            </div>
-
-            <div className="feature-card">
-              <div className="feature-icon">📊</div>
-              <h3 className="feature-title">Analytics Dashboard</h3>
-              <p className="feature-description">
-                Track your contributions, view statistics, and see the impact you're making on road safety.
-              </p>
-            </div>
-
-            <div className="feature-card">
-              <div className="feature-icon">🛡️</div>
-              <h3 className="feature-title">Verified Data</h3>
-              <p className="feature-description">
-                All hazard reports are reviewed and verified by our moderation team to ensure accuracy and reliability.
+            <div className="feature-card-new">
+              <div className="feature-icon-new">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+              </div>
+              <h3 className="feature-title-new">Find Safer Routes</h3>
+              <p className="feature-desc-new">
+                Our smart algorithm suggests alternative routes to avoid danger.
               </p>
             </div>
           </div>
@@ -220,177 +187,213 @@ const About = () => {
       </section>
 
       {/* Team Section */}
-      {teamMembers.length > 0 && (
-        <section className="about-section team-section">
-          <div className="section-container">
-            <h2 className="section-title-center">Meet Our Team</h2>
-            <p className="section-subtitle">
-              The passionate individuals behind SafeRoute
-            </p>
+      <section className="team-section-new">
+        <div className="section-container-new">
+          <h2 className="section-title-new">Our Team</h2>
+          
+          <div className="team-grid-new">
+            {/* Default team members */}
+            <div className="team-card-new">
+              <div className="team-avatar-new">
+                <svg width="100" height="100" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="50" fill="#e5e7eb"/>
+                  <circle cx="50" cy="35" r="15" fill="#6b7280"/>
+                  <path d="M 30 70 Q 50 60 70 70 L 70 100 L 30 100 Z" fill="#6b7280"/>
+                </svg>
+              </div>
+              <h3 className="team-name-new">Jane Doe</h3>
+              <p className="team-role-new">Founder & CEO</p>
+              <p className="team-bio-new">
+                Passionate about using technology to solve real-world problems.
+              </p>
+            </div>
 
-            <div className="team-grid">
-              {teamMembers.map((member) => (
-                <div key={member._id} className="team-card">
+            {teamMembers.length > 0 ? (
+              teamMembers.map((member) => (
+                <div key={member._id} className="team-card-new">
                   {member.photo ? (
                     <img 
                       src={`${API_BASE_URL}${member.photo}`} 
                       alt={member.name}
-                      className="team-photo"
+                      className="team-avatar-new"
                     />
                   ) : (
-                    <div className="team-photo-placeholder">
+                    <div className="team-avatar-new" style={{ background: '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', color: '#64748b' }}>
                       {member.name.charAt(0)}
                     </div>
                   )}
-                  <h3 className="team-name">{member.name}</h3>
-                  <p className="team-position">{member.position}</p>
-                  {member.bio && (
-                    <p className="team-bio">{member.bio}</p>
-                  )}
-                  {(member.email || member.social?.linkedin || member.social?.twitter) && (
-                    <div className="team-social">
-                      {member.email && (
-                        <a href={`mailto:${member.email}`} className="social-link">📧</a>
-                      )}
-                      {member.social?.linkedin && (
-                        <a href={member.social.linkedin} target="_blank" rel="noopener noreferrer" className="social-link">💼</a>
-                      )}
-                      {member.social?.twitter && (
-                        <a href={member.social.twitter} target="_blank" rel="noopener noreferrer" className="social-link">🐦</a>
-                      )}
-                    </div>
-                  )}
+                  <h3 className="team-name-new">{member.name}</h3>
+                  <p className="team-role-new">{member.position}</p>
+                  {member.bio && <p className="team-bio-new">{member.bio}</p>}
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+              ))
+            ) : (
+              <>
+                <div className="team-card-new">
+                  <div className="team-avatar-new" style={{ background: '#93c5fd', borderRadius: '50%' }}>
+                    <span style={{ fontSize: '40px' }}>👨‍💼</span>
+                  </div>
+                  <h3 className="team-name-new">John Smith</h3>
+                  <p className="team-role-new">Lead Engineer</p>
+                  <p className="team-bio-new">
+                    Expert in mapping technologies and real-time data processing.
+                  </p>
+                </div>
 
-      {/* Statistics Section */}
-      <section className="about-section stats-section">
-        <div className="section-container">
-          <h2 className="section-title-center">Our Impact</h2>
-          
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-value">10,000+</div>
-              <div className="stat-label">Active Users</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value">50,000+</div>
-              <div className="stat-label">Hazards Reported</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value">35,000+</div>
-              <div className="stat-label">Hazards Resolved</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value">95%</div>
-              <div className="stat-label">User Satisfaction</div>
-            </div>
+                <div className="team-card-new">
+                  <div className="team-avatar-new" style={{ background: '#c4b5fd', borderRadius: '50%' }}>
+                    <span style={{ fontSize: '40px' }}>👩‍💼</span>
+                  </div>
+                  <h3 className="team-name-new">Emily White</h3>
+                  <p className="team-role-new">UX/UI Designer</p>
+                  <p className="team-bio-new">
+                    Dedicated to creating intuitive and user-friendly interfaces.
+                  </p>
+                </div>
+
+                <div className="team-card-new">
+                  <div className="team-avatar-new" style={{ background: '#6ee7b7', borderRadius: '50%' }}>
+                    <span style={{ fontSize: '40px' }}>👨‍💻</span>
+                  </div>
+                  <h3 className="team-name-new">Michael Brown</h3>
+                  <p className="team-role-new">Community Manager</p>
+                  <p className="team-bio-new">
+                    Building a strong and engaged SafeRoute user community.
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
 
-      {/* FAQ Section */}
-      {faqs.length > 0 && (
-        <section className="about-section faq-section">
-          <div className="section-container">
-            <h2 className="section-title-center">Frequently Asked Questions</h2>
-
-            {/* Category Filter */}
-            {getCategories().length > 1 && (
-              <div className="faq-categories">
-                {getCategories().map(category => (
-                  <button
-                    key={category}
-                    className={`category-btn ${activeCategory === category ? 'active' : ''}`}
-                    onClick={() => setActiveCategory(category)}
-                  >
-                    {category}
-                  </button>
-                ))}
+      {/* Contact Section */}
+      <section className="contact-section-new">
+        <div className="section-container-new">
+          <h2 className="section-title-new">Contact Us</h2>
+          
+          <form onSubmit={handleContactSubmit} className="contact-form-new">
+            <div className="form-row-new">
+              <div className="form-group-new">
+                <label className="form-label-new">Name</label>
+                <input
+                  type="text"
+                  value={contactForm.name}
+                  onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                  className="form-input-new"
+                  required
+                />
               </div>
-            )}
+              <div className="form-group-new">
+                <label className="form-label-new">Email</label>
+                <input
+                  type="email"
+                  value={contactForm.email}
+                  onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                  className="form-input-new"
+                  required
+                />
+              </div>
+            </div>
+            <div className="form-group-new">
+              <label className="form-label-new">Subject</label>
+              <input
+                type="text"
+                value={contactForm.subject}
+                onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
+                className="form-input-new"
+                required
+              />
+            </div>
+            <div className="form-group-new">
+              <label className="form-label-new">Message</label>
+              <textarea
+                value={contactForm.message}
+                onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                className="form-textarea-new"
+                rows="5"
+                required
+              />
+            </div>
+            <button type="submit" className="btn-submit-new">Send Message</button>
+          </form>
+        </div>
+      </section>
 
-            <div className="faq-list">
-              {filteredFaqs.map((faq, index) => (
-                <details key={faq._id} className="faq-item">
-                  <summary className="faq-question">
-                    <span>{faq.question}</span>
-                    <span className="faq-icon">▼</span>
+      {/* FAQ Section */}
+      <section className="faq-section-new">
+        <div className="section-container-new">
+          <h2 className="section-title-new">Frequently Asked Questions</h2>
+          
+          <div className="faq-list-new">
+            {faqs.length > 0 ? (
+              faqs.map((faq) => (
+                <details 
+                  key={faq._id} 
+                  className="faq-item-new"
+                  open={expandedFaq === faq._id}
+                  onClick={() => setExpandedFaq(expandedFaq === faq._id ? null : faq._id)}
+                >
+                  <summary className="faq-question-new">
+                    {faq.question}
+                    <span className="faq-arrow-new">▼</span>
                   </summary>
-                  <div className="faq-answer">
-                    {faq.answer}
+                  <div className="faq-answer-new">{faq.answer}</div>
+                </details>
+              ))
+            ) : (
+              <>
+                <details className="faq-item-new">
+                  <summary className="faq-question-new">
+                    How accurate is the hazard information?
+                    <span className="faq-arrow-new">▼</span>
+                  </summary>
+                  <div className="faq-answer-new">
+                    All hazard reports are verified by our community and moderation team to ensure accuracy. We use a combination of user reports, timestamps, and verification status to provide the most reliable information.
                   </div>
                 </details>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
-      {/* CTA Section */}
-      <section className="about-section cta-section">
-        <div className="cta-content">
-          <h2 className="cta-title">Ready to Make Roads Safer?</h2>
-          <p className="cta-description">
-            Join thousands of users already contributing to safer roads
-          </p>
-          <div className="cta-buttons">
-            <button className="btn-cta-primary" onClick={() => navigate('/register')}>
-              Get Started
-            </button>
-            <button className="btn-cta-secondary" onClick={() => navigate('/dashboard')}>
-              View Live Map
-            </button>
+                <details className="faq-item-new">
+                  <summary className="faq-question-new">
+                    Is SafeRoute available in my country?
+                    <span className="faq-arrow-new">▼</span>
+                  </summary>
+                  <div className="faq-answer-new">
+                    SafeRoute is currently available in Sri Lanka and expanding to more countries. Check our website for the latest availability in your region.
+                  </div>
+                </details>
+
+                <details className="faq-item-new">
+                  <summary className="faq-question-new">
+                    How do you protect my privacy?
+                    <span className="faq-arrow-new">▼</span>
+                  </summary>
+                  <div className="faq-answer-new">
+                    We take privacy seriously. Your location data is only used to provide route suggestions and is never shared with third parties. All data is encrypted and stored securely.
+                  </div>
+                </details>
+              </>
+            )}
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="about-footer">
-        <div className="footer-container">
-          <div className="footer-section">
-            <h3 className="footer-title">SafeRoute</h3>
-            <p className="footer-text">
-              Building safer roads through community-driven reporting and smart routing.
-            </p>
+      <footer className="footer-new">
+        <div className="footer-content-new">
+          <div className="footer-social-new">
+            <a href="#" className="social-link-new">Facebook</a>
+            <a href="#" className="social-link-new">Twitter</a>
+            <a href="#" className="social-link-new">Instagram</a>
           </div>
-
-          <div className="footer-section">
-            <h4 className="footer-heading">Quick Links</h4>
-            <nav className="footer-nav">
-              <button onClick={() => navigate('/')} className="footer-link">Home</button>
-              <button onClick={() => navigate('/dashboard')} className="footer-link">Live Map</button>
-              <button onClick={() => navigate('/safe-route')} className="footer-link">Safe Route</button>
-              <button onClick={() => navigate('/about')} className="footer-link">About</button>
-            </nav>
+          <div className="footer-links-new">
+            <a href="#" className="footer-link-new">Terms of Service</a>
+            <span className="footer-divider-new">|</span>
+            <a href="#" className="footer-link-new">Privacy Policy</a>
           </div>
-
-          <div className="footer-section">
-            <h4 className="footer-heading">Legal</h4>
-            <nav className="footer-nav">
-              <a href="#" className="footer-link">Privacy Policy</a>
-              <a href="#" className="footer-link">Terms of Service</a>
-              <a href="#" className="footer-link">Contact Us</a>
-            </nav>
+          <div className="footer-copy-new">
+            © 2024 SafeRoute. All rights reserved.
           </div>
-
-          <div className="footer-section">
-            <h4 className="footer-heading">Connect</h4>
-            <div className="footer-social">
-              <a href="#" className="social-icon">📘</a>
-              <a href="#" className="social-icon">🐦</a>
-              <a href="#" className="social-icon">📷</a>
-              <a href="#" className="social-icon">💼</a>
-            </div>
-          </div>
-        </div>
-
-        <div className="footer-bottom">
-          <p>&copy; 2025 SafeRoute. All rights reserved.</p>
         </div>
       </footer>
     </div>
