@@ -1,0 +1,337 @@
+// ===================================================================
+// SAFEROUTE - TEST DATA FOR COPY & PASTE
+// ===================================================================
+
+// ===================================================================
+// 1. USER REGISTRATION DATA
+// ===================================================================
+
+// Test User 1
+Full Name: John Smith
+Email: john.smith@gmail.com
+Password: Test123456
+Confirm Password: Test123456
+
+// Test User 2
+Full Name: Sarah Johnson
+Email: sarah.johnson@gmail.com
+Password: Test123456
+Confirm Password: Test123456
+
+// Test User 3
+Full Name: David Lee
+Email: david.lee@gmail.com
+Password: Test123456
+Confirm Password: Test123456
+
+// ===================================================================
+// 2. LOGIN CREDENTIALS
+// ===================================================================
+
+// Regular User
+Email: john.smith@gmail.com
+Password: Test123456
+
+// Moderator (after creation)
+Email: moderator@saferoute.com
+Password: Moderator123
+
+// Admin (after creation)
+Email: admin@saferoute.com
+Password: Admin123456
+
+// ===================================================================
+// 3. HAZARD REPORTS - COPY & PASTE
+// ===================================================================
+
+// -------------------- HAZARD 1: POTHOLE --------------------
+Type: Pothole
+Description: Large pothole on Main Street near the intersection causing vehicle damage. Approximately 30cm deep and 50cm wide.
+Severity: High
+Latitude: 6.9271
+Longitude: 79.8612
+Address: Main Street, Colombo 01
+
+// -------------------- HAZARD 2: ACCIDENT --------------------
+Type: Accident
+Description: Two-vehicle collision blocking the left lane. Traffic moving slowly. Emergency services on site.
+Severity: High
+Latitude: 6.9312
+Longitude: 79.8508
+Address: Galle Road, Colombo 03
+
+// -------------------- HAZARD 3: TRAFFIC JAM --------------------
+Type: Traffic Jam
+Description: Heavy traffic on Highway 1 due to ongoing road construction. Expect delays of 15-20 minutes.
+Severity: Medium
+Latitude: 6.9497
+Longitude: 79.8500
+Address: Kandy Road, Colombo 10
+
+// -------------------- HAZARD 4: CONSTRUCTION --------------------
+Type: Construction
+Description: Road widening project in progress. One lane closed. Follow detour signs.
+Severity: Medium
+Latitude: 6.9200
+Longitude: 79.8550
+Address: Baseline Road, Colombo 09
+
+// -------------------- HAZARD 5: FLOODING --------------------
+Type: Flooding
+Description: Street flooding due to heavy rain. Water level approximately 6 inches. Drive with caution.
+Severity: High
+Latitude: 6.9400
+Longitude: 79.8600
+Address: Duplication Road, Colombo 04
+
+// -------------------- HAZARD 6: ROAD CLOSURE --------------------
+Type: Road Closure
+Description: Road completely closed for maintenance. Use alternative route via Galle Road.
+Severity: High
+Latitude: 6.9150
+Longitude: 79.8480
+Address: Marine Drive, Colombo 03
+
+// ===================================================================
+// 4. ROUTE PLANNING DATA
+// ===================================================================
+
+// -------------------- ROUTE 1: Daily Commute --------------------
+From: Colombo Fort Railway Station
+To: Mount Lavinia Beach
+Route Name: Daily Commute to Office
+
+// -------------------- ROUTE 2: Weekend Trip --------------------
+From: Galle Face Green
+To: National Museum Colombo
+Route Name: Weekend Museum Visit
+
+// -------------------- ROUTE 3: Shopping --------------------
+From: Colombo Fort
+To: Liberty Plaza
+Route Name: Shopping Route
+
+// ===================================================================
+// 5. SEARCH LOCATIONS
+// ===================================================================
+
+Colombo Fort Railway Station
+Galle Face Green
+Mount Lavinia Beach
+National Museum Colombo
+Liberty Plaza
+Independence Square
+Viharamahadevi Park
+Bambalapitiya
+Wellawatta
+Dehiwala Zoo
+
+// ===================================================================
+// 6. GPS COORDINATES
+// ===================================================================
+
+Colombo Fort: 6.9344, 79.8428
+Galle Face: 6.9271, 79.8456
+Mount Lavinia: 6.8373, 79.8636
+Bambalapitiya: 6.8935, 79.8553
+Wellawatta: 6.8774, 79.8585
+Dehiwala: 6.8520, 79.8630
+Nugegoda: 6.8649, 79.8997
+Rajagiriya: 6.9147, 79.8911
+Battaramulla: 6.8989, 79.9189
+Maharagama: 6.8469, 79.9265
+
+// ===================================================================
+// 7. PROFILE UPDATE DATA
+// ===================================================================
+
+Full Name: John Smith Updated
+Phone: +94 77 123 4567
+Bio: Regular SafeRoute user committed to road safety
+
+Full Name: Sarah Johnson Updated  
+Phone: +94 77 234 5678
+Bio: Daily commuter helping improve road conditions
+
+// ===================================================================
+// 8. ERROR TESTING DATA
+// ===================================================================
+
+// Invalid Email Format
+Email: notanemail
+Email: test@
+Email: @gmail.com
+
+// Weak Passwords
+Password: 123
+Password: pass
+
+// Mismatched Passwords
+Password: Test123456
+Confirm Password: Test654321
+
+// SQL Injection Attempts
+Email: admin' OR '1'='1
+Description: '; DROP TABLE users; --
+
+// XSS Attack Attempts  
+Description: <script>alert('XSS')</script>
+Description: <img src=x onerror=alert('XSS')>
+Full Name: <svg/onload=alert('XSS')>
+
+// Long Text (500+ characters)
+Description: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium totam rem aperiam eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
+
+// ===================================================================
+// 9. ADMIN ACTIONS DATA
+// ===================================================================
+
+// Suspend User Reason
+Reason: Spam activities detected
+
+// Promote User Reason  
+Reason: Trusted user with good track record
+
+// Delete Hazard Reason
+Reason: Duplicate report
+
+// Reject Report Reason
+Reason: Insufficient information provided
+Reason: Unable to verify location
+Reason: Spam report
+
+// ===================================================================
+// 10. MODERATOR VERIFICATION NOTES
+// ===================================================================
+
+Verification Note: Hazard verified with photo evidence
+Verification Note: Location confirmed via GPS coordinates
+Verification Note: Matches other reports in the area
+
+Rejection Note: No photo evidence provided
+Rejection Note: Location coordinates invalid
+Rejection Note: Description too vague
+
+// ===================================================================
+// 11. SPECIAL CHARACTERS TEST
+// ===================================================================
+
+Description: Testing special characters @#$%^&*()_+-={}[]|:;"'<>,.?/~`
+Address: O'Malley's Street, D'Souza Lane
+Full Name: José María García-López
+
+// ===================================================================
+// 12. BOUNDARY VALUE TESTING
+// ===================================================================
+
+// Minimum valid values
+Full Name: Jo
+Email: a@b.c
+Password: Pass123
+Description: OK
+
+// Maximum valid values (if limits exist)
+Full Name: Bartholomew Christopher Montgomery Wellington III
+Email: verylongemailaddress123456@verylongdomainname123456.com
+Phone: +94 77 999 9999
+
+// ===================================================================
+// 13. UNICODE & MULTILINGUAL TEST
+// ===================================================================
+
+Full Name: 王小明
+Full Name: مُحَمَّد
+Full Name: Владимир
+Description: கடற்கரை சாலையில் பெரிய குழி
+Description: මාර්ගයේ විශාල වළක්
+
+// ===================================================================
+// 14. DATE & TIME SCENARIOS
+// ===================================================================
+
+// For filtering hazards by time
+Last 1 hour
+Last 24 hours
+Last 7 days
+Last 30 days
+Custom: 2025-11-01 to 2025-12-02
+
+// ===================================================================
+// 15. BULK OPERATIONS TEST DATA
+// ===================================================================
+
+// Select multiple hazard IDs for bulk actions
+// (Use actual IDs from your database)
+
+Action: Verify Selected
+Action: Delete Selected
+Action: Export Selected
+
+// ===================================================================
+// 16. SAVED ROUTES NAMES
+// ===================================================================
+
+Daily Commute to Office
+Morning Workout Route
+School Drop-off Route
+Weekend Beach Trip
+Grocery Shopping Route
+Hospital Emergency Route
+Airport Fast Route
+
+// ===================================================================
+// 17. NOTIFICATION TEST SCENARIOS
+// ===================================================================
+
+// When hazard gets verified
+Expected: "Your hazard report has been verified"
+
+// When hazard gets rejected  
+Expected: "Your hazard report was rejected: [reason]"
+
+// When new hazard nearby
+Expected: "New hazard reported near you: Pothole on Main Street"
+
+// ===================================================================
+// 18. MOBILE TESTING DATA
+// ===================================================================
+
+// Screen sizes to test
+Desktop: 1920x1080
+Laptop: 1366x768
+Tablet: 768x1024
+Mobile: 375x667
+Mobile Large: 414x896
+
+// Touch interactions
+Tap marker on map
+Swipe to view more hazards
+Pinch to zoom map
+Long press to drop pin
+
+// ===================================================================
+// 19. PERFORMANCE TEST SCENARIOS
+// ===================================================================
+
+// Load many markers
+Create 50+ hazards in same area
+Zoom in/out rapidly
+Pan across entire city
+Filter/unfilter repeatedly
+
+// ===================================================================
+// 20. ACCESSIBILITY TEST DATA
+// ===================================================================
+
+// Keyboard navigation
+Tab through form fields
+Enter to submit
+Escape to close modal
+Arrow keys to navigate map
+
+// Screen reader test
+Check alt text on images
+Check ARIA labels
+Check form labels
+Check error announcements
+
