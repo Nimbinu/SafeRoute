@@ -8,13 +8,12 @@ import MapDashboard from './pages/MapDashboard';
 import SafeRoute from './pages/SafeRoute';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
-import About from './pages/About';
 
 function AppContent() {
   const location = useLocation();
   
   // Pages that don't need the header
-  const noHeaderRoutes = ['/', '/home', '/login', '/register', '/dashboard', '/safe-route', '/profile', '/about'];
+  const noHeaderRoutes = ['/', '/home', '/login', '/register', '/dashboard', '/safe-route', '/profile'];
   const showHeader = !noHeaderRoutes.includes(location.pathname);
 
   return (
@@ -57,7 +56,6 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-        <Route path="/about" element={<About />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </div>

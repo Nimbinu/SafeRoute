@@ -20,7 +20,6 @@ const Home = () => {
         
         <nav className="navbar">
           <button className="nav-link" onClick={() => navigate('/')}>Home</button>
-          <button className="nav-link" onClick={() => navigate('/about')}>About</button>
           <button className="nav-link" onClick={() => navigate('/login')}>Login</button>
           <button className="nav-link nav-link-signup" onClick={() => navigate('/register')}>Sign Up</button>
         </nav>

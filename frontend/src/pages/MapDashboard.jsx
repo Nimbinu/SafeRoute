@@ -1251,26 +1251,9 @@ export default function MapDashboard() {
                 </button>
               </div>
 
-              {/* About Section */}
+              {/* Logout Section */}
               <div>
-                <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '12px', color: '#374151' }}>Information</h3>
-                <button onClick={() => { setShowSettings(false); navigate('/about'); }} style={{
-                  width: '100%',
-                  padding: '12px',
-                  backgroundColor: '#f3f4f6',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  fontSize: '0.9375rem',
-                  marginBottom: '8px'
-                }}>
-                  <span>ℹ️</span>
-                  <span>About SafeRoute</span>
-                </button>
+                <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '12px', color: '#374151' }}>Account</h3>
                 <button onClick={() => { 
                   localStorage.clear();
                   setShowSettings(false);
