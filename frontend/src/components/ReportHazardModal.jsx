@@ -155,6 +155,37 @@ const ReportHazardModal = ({ isOpen, onClose }) => {
         throw new Error('⚠️ Please provide a location (allow GPS or enter manually).');
       }
 
+      // Get readable address from coordinates if not provided
+      let readableAddress = formData.location;
+      if (!readableAddress || readableAddress.trim() === '') {
+        try {
+          // Use reverse geocoding to get address
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${locationToUse.latitude}&lon=${locationToUse.longitude}&zoom=18&addressdetails=1`
+          );
+          const geoData = await response.json();
+          
+          if (geoData && geoData.address) {
+            // Build a readable address from components
+            const addr = geoData.address;
+            const parts = [];
+            
+            if (addr.road) parts.push(addr.road);
+            if (addr.suburb) parts.push(addr.suburb);
+            else if (addr.neighbourhood) parts.push(addr.neighbourhood);
+            if (addr.city) parts.push(addr.city);
+            else if (addr.town) parts.push(addr.town);
+            
+            readableAddress = parts.length > 0 ? parts.join(', ') : geoData.display_name;
+          } else {
+            readableAddress = 'Unknown location';
+          }
+        } catch (geoError) {
+          console.warn('Reverse geocoding failed:', geoError);
+          readableAddress = 'Unknown location';
+        }
+      }
+
       // Prepare hazard data
       const hazardData = {
         hazardType: formData.hazardType,
@@ -162,7 +193,7 @@ const ReportHazardModal = ({ isOpen, onClose }) => {
         location: {
           type: 'Point',
           coordinates: [locationToUse.longitude, locationToUse.latitude],
-          address: formData.location || `${locationToUse.latitude}, ${locationToUse.longitude}`
+          address: readableAddress
         },
         severity: 'Medium' // You can add a severity selector if needed
       };
@@ -449,9 +480,12 @@ const ReportHazardModal = ({ isOpen, onClose }) => {
             <div style={{ marginBottom: '10px' }}>
               <input
                 type="text"
-                placeholder="🔍 Type location and press Enter (e.g., 'Colombo', 'Galle Road')"
-                value={locationSearch}
-                onChange={(e) => setLocationSearch(e.target.value)}
+                placeholder="🔍 Type location name and press Enter (e.g., 'Rathnapura Road', 'Colombo', 'Galle Road')"
+                value={formData.location}
+                onChange={(e) => {
+                  setFormData({ ...formData, location: e.target.value });
+                  setLocationSearch(e.target.value);
+                }}
                 onKeyPress={handleLocationSearch}
                 className="form-select"
                 disabled={loading || searchingLocation}
@@ -463,7 +497,7 @@ const ReportHazardModal = ({ isOpen, onClose }) => {
                 }}
               />
               <p style={{ fontSize: '0.75rem', color: !currentLocation ? '#f59e0b' : '#6b7280', marginTop: '4px', fontWeight: !currentLocation ? '600' : 'normal' }}>
-                {searchingLocation ? '🔍 Searching...' : !currentLocation ? '⚠️ Required: Type a location and press Enter to continue' : '✅ Location set successfully'}
+                {searchingLocation ? '🔍 Searching for location...' : !currentLocation ? '⚠️ Required: Type a location name and press Enter to search' : '✅ Location set successfully'}
               </p>
             </div>
 
