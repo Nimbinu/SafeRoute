@@ -220,10 +220,36 @@ export default function MapDashboard() {
     return `${days} day${days > 1 ? 's' : ''} ago`;
   };
 
+  // Helper function to get readable location from hazard
+  const getReadableLocation = (hazard) => {
+    if (!hazard.location) return 'Unknown location';
+    
+    const address = hazard.location.address;
+    if (!address) return 'Unknown location';
+    
+    // Check if address looks like coordinates (contains numbers and commas/dots)
+    const looksLikeCoordinates = /^[\d\.\,\s]+$/.test(address.trim());
+    
+    if (looksLikeCoordinates) {
+      // Address is coordinates, try to get a better location name
+      // For now, use a generic location based on coordinates
+      const coords = hazard.location.coordinates;
+      if (coords && coords.length === 2) {
+        // You could integrate a reverse geocoding API here
+        // For now, just show "Location"
+        return 'your area';
+      }
+      return 'Unknown location';
+    }
+    
+    // Address looks good, return it
+    return address;
+  };
+
   const recentReports = filteredHazards.slice(0, 5).map(hazard => ({
     id: hazard._id,
     type: hazard.hazardType.toLowerCase().replace(' ', '-'),
-    title: `${hazard.hazardType} on ${hazard.location.address || 'Unknown location'}`,
+    title: `${hazard.hazardType} on ${getReadableLocation(hazard)}`,
     time: timeAgo(hazard.createdAt),
     icon: getHazardIcon(hazard.hazardType)
   }));
